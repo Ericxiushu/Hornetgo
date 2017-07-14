@@ -10,7 +10,6 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"commonapply/libs/logs"
 	"strings"
 )
 
@@ -45,7 +44,7 @@ func GetPageByDiy(name string) ([]byte, error) {
 
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		logs.Error(err)
+		Error(err)
 	} else {
 		localCache.Put(name, data, time.Hour*1)
 	}
