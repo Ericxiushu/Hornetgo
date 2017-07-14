@@ -14,7 +14,7 @@ import (
 	"github.com/qiangxue/fasthttp-routing"
 )
 
-var mySessionsConfig = sessions.Config{Cookie: "mysessioncookieid",
+var mySessionsConfig = sessions.Config{Cookie: HornetInfo.AppConfig.AppName,
 	Expires:                     time.Duration(1) * time.Hour,
 	DisableSubdomainPersistence: false,
 }

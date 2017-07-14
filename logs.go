@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	SetLogFuncCall(true)
+	SetLogFuncCall(HornetInfo.AppConfig.EnableShowErrorsLine)
 }
 
 // SetLogFuncCall set the CallDepth, default is 3
