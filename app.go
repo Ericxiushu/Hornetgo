@@ -42,7 +42,16 @@ type Hornet struct {
 
 func Run() error {
 
+	checkBeforeRun()
+
 	Info("ListenAndServe port :", HornetInfo.AppConfig.Port)
 
 	return fasthttp.ListenAndServe(fmt.Sprintf(":%d", HornetInfo.AppConfig.Port), HornetInfo.Router.HandleRequest)
+}
+
+func checkBeforeRun() {
+	if HornetInfo.AppConfig.EnableSession && mySessions == nil {
+		panic("manager session error")
+	}
+
 }

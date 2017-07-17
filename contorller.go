@@ -18,14 +18,14 @@ type Contorller struct {
 }
 
 type ControllerIntface interface {
-	Init(*routing.Context)
+	Init(*routing.Context, sessions.Session)
 	Start()
 }
 
 func init() {
 }
 
-func (c *Contorller) Init(ctx *routing.Context) {
+func (c *Contorller) Init(ctx *routing.Context, session sessions.Session) {
 
 	c.Ctx = ctx
 	c.YarWriter = &YarWriter{
@@ -41,11 +41,7 @@ func (c *Contorller) Init(ctx *routing.Context) {
 
 	c.Data = make(map[interface{}]interface{}, 0)
 
-	if HornetInfo.AppConfig.EnableSession && mySessions != nil {
-		c.Session = mySessions.StartFasthttp(c.Ctx.RequestCtx)
-	} else if HornetInfo.AppConfig.EnableSession && mySessions == nil {
-		panic("session start error")
-	}
+	c.Session = session
 
 }
 

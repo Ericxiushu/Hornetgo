@@ -5,6 +5,8 @@ import (
 
 	"strings"
 
+	"github.com/kataras/go-sessions"
+
 	"github.com/qiangxue/fasthttp-routing"
 	"github.com/valyala/fasthttp"
 )
@@ -56,7 +58,16 @@ func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 			panic("controller is not ControllerInterface")
 		}
 
-		execController.Init(ctx)
+		var session sessions.Session
+		if HornetInfo.AppConfig.EnableSession {
+			session = mySessions.StartFasthttp(ctx.RequestCtx)
+
+			defer func() {
+				// todo : 关闭session
+			}()
+		}
+
+		execController.Init(ctx, session)
 
 		execController.Start()
 
