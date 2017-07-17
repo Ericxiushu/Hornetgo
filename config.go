@@ -5,6 +5,7 @@ type Config struct {
 	RunMode              string
 	Port                 int
 	EnableGzip           bool
+	EnableSession        bool
 	EnableShowErrorsLine bool
 	WebConfig            WebConfig
 }

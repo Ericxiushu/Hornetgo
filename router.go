@@ -3,6 +3,8 @@ package Hornetgo
 import (
 	"reflect"
 
+	"strings"
+
 	"github.com/qiangxue/fasthttp-routing"
 	"github.com/valyala/fasthttp"
 )
@@ -17,11 +19,25 @@ func NewRouter() *Router {
 	}
 }
 
-func (c *Router) SetAny(path string, obj interface{}) *routing.Route {
-	return c.Any(path, StartRouter(obj))
+//SetRoute SetRoute
+func (c *Router) SetRoute(path string, obj interface{}, methods ...string) *routing.Route {
+
+	if len(methods) > 0 {
+		switch strings.ToLower(methods[0]) {
+		case "get":
+			return c.Get(path, RegisterRouter(obj))
+		case "post":
+			return c.Post(path, RegisterRouter(obj))
+		default:
+			return c.Any(path, RegisterRouter(obj))
+		}
+	}
+
+	return c.Any(path, RegisterRouter(obj))
+
 }
 
-func StartRouter(obj interface{}) func(ctx *routing.Context) error {
+func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 
 	return func(ctx *routing.Context) error {
 
@@ -53,7 +69,7 @@ func StartRouter(obj interface{}) func(ctx *routing.Context) error {
 func recoverPanic(ctx *fasthttp.RequestCtx) {
 
 	if err := recover(); err != nil {
-		Error("panic : ", err)
+		Error("Catch Panic : ", err)
 		ShowPage("error/errPage.html", map[interface{}]interface{}{"err_msg": err}, ctx)
 	}
 

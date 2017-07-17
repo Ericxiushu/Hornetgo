@@ -1,25 +1,14 @@
 package Hornetgo
 
 import (
-	"fmt"
+	"encoding/json"
 	"strings"
-	"time"
 
-	"github.com/caarlos0/env"
 	"github.com/kataras/go-sessions"
-	"github.com/kataras/go-sessions/sessiondb/redis"
-	"github.com/kataras/go-sessions/sessiondb/redis/service"
-	"github.com/valyala/fasthttp"
+	"github.com/pkg/errors"
 
 	"github.com/qiangxue/fasthttp-routing"
 )
-
-var mySessionsConfig = sessions.Config{Cookie: HornetInfo.AppConfig.AppName,
-	Expires:                     time.Duration(1) * time.Hour,
-	DisableSubdomainPersistence: false,
-}
-
-var mySessions = sessions.New(mySessionsConfig)
 
 type Contorller struct {
 	Ctx       *routing.Context
@@ -34,7 +23,6 @@ type ControllerIntface interface {
 }
 
 func init() {
-	startSession()
 }
 
 func (c *Contorller) Init(ctx *routing.Context) {
@@ -52,7 +40,12 @@ func (c *Contorller) Init(ctx *routing.Context) {
 	}
 
 	c.Data = make(map[interface{}]interface{}, 0)
-	c.Session = mySessions.StartFasthttp(c.Ctx.RequestCtx)
+
+	if HornetInfo.AppConfig.EnableSession && mySessions != nil {
+		c.Session = mySessions.StartFasthttp(c.Ctx.RequestCtx)
+	} else if HornetInfo.AppConfig.EnableSession && mySessions == nil {
+		panic("session start error")
+	}
 
 }
 
@@ -67,36 +60,6 @@ func (c *Contorller) errorPage(str string) {
 
 }
 
-func startSession() {
-
-	type EnvConfig struct {
-		Host string `env:"WXHOST_SYSTEM_REDIS_HOST"`
-		Port int    `env:"WXHOST_SYSTEM_REDIS_PORT"`
-	}
-
-	cfg := EnvConfig{}
-	err := env.Parse(&cfg)
-	if err != nil {
-		panic(err)
-	}
-	if len(cfg.Host) < 1 || cfg.Port < 1 {
-		panic("redis config error")
-	}
-
-	db := redis.New(service.Config{Network: service.DefaultRedisNetwork,
-		Addr:          fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		Password:      "",
-		Database:      "",
-		MaxIdle:       0,
-		MaxActive:     0,
-		IdleTimeout:   service.DefaultRedisIdleTimeout,
-		Prefix:        "",
-		MaxAgeSeconds: 3600})
-
-	mySessions.UseDatabase(db)
-
-}
-
 // Render Render
 func (c *Contorller) Render(name string) {
 
@@ -105,18 +68,64 @@ func (c *Contorller) Render(name string) {
 	return
 }
 
-func render(name string, data interface{}, ctx *fasthttp.RequestCtx) {
+// ServeJSON ServeJSON
+func (c *Contorller) ServeJSON() {
 
-	body, err := GetPageByTemplate(name, data)
-	if err != nil {
-		Error(err)
-		body = []byte("not find")
+	data, err := json.Marshal(c.Data["json"])
+	if err == nil {
+		c.Ctx.Response.Header.Set("Content-Type", "application/json; charset=utf-8")
+	} else {
+		Error(errors.WithMessage(err, "json.Marshal"))
+		data = []byte(err.Error())
 	}
 
-	ctx.Response.Header.Set("Content-Type", "text/html; charset=utf-8")
-	ctx.Write(body)
+	c.Ctx.Write(data)
 
-	doGzip(ctx)
+	doGzip(c.Ctx.RequestCtx)
 
+	return
+}
+
+// GetSession GetSession
+func (c *Contorller) GetSession(key string) interface{} {
+	return c.Session.Get(key)
+}
+
+// SetSession SetSession
+func (c *Contorller) SetSession(key string, value interface{}) {
+	c.Session.Set(key, value)
+}
+
+func (c *Contorller) sendError(errCode int, errMsg string) {
+	c.Data["json"] = map[string]interface{}{
+		"err_code": errCode,
+		"err_msg":  errMsg,
+	}
+	c.ServeJSON()
+	return
+}
+
+func (c *Contorller) sendResult(result interface{}) {
+	c.Data["json"] = map[string]interface{}{
+		"err_code": 0,
+		"err_msg":  "success",
+		"data":     result,
+	}
+	return
+}
+
+func (c *Contorller) sendSuccess() {
+	c.Data["json"] = map[string]interface{}{
+		"err_code": 0,
+		"err_msg":  "success",
+		"data":     "",
+	}
+	c.ServeJSON()
+	return
+}
+
+func (c *Contorller) sendOriInfo(result interface{}) {
+	c.Data["json"] = result
+	c.ServeJSON()
 	return
 }
