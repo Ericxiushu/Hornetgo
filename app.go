@@ -37,14 +37,13 @@ func init() {
 		},
 	}
 
-}
-
-func Run() error {
-
 	HornetInfo = &Hornet{
 		AppConfig: AppConfig,
 		AppRouter: NewAppRouter(),
 	}
+}
+
+func Run() error {
 
 	checkBeforeRun()
 
