@@ -33,11 +33,6 @@ func init() {
 	}
 }
 
-const (
-	RunModeDev  = "dev"
-	RunModeProd = "prod"
-)
-
 type Hornet struct {
 	AppConfig *Config
 	AppRouter *AppRouter

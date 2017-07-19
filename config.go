@@ -2,13 +2,20 @@ package Hornetgo
 
 type Config struct {
 	AppName              string
-	RunMode              string
+	RunMode              RunMode
 	Port                 int
 	EnableGzip           bool
 	EnableSession        bool
 	EnableShowErrorsLine bool
 	WebConfig            WebConfig
 }
+
+type RunMode string
+
+const (
+	RunModeDev  RunMode = "dev"
+	RunModeProd RunMode = "prod"
+)
 
 // WebConfig holds web related config
 type WebConfig struct {
