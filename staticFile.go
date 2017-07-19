@@ -52,7 +52,7 @@ func searchFile(ctx *fasthttp.RequestCtx) (string, os.FileInfo, error) {
 
 	for prefix, staticDir := range HornetInfo.AppConfig.WebConfig.StaticDir {
 
-		Error(requestPath, prefix, staticDir)
+		AppDebug(requestPath, prefix, staticDir)
 
 		if !strings.Contains(requestPath, prefix) {
 			continue
@@ -62,7 +62,7 @@ func searchFile(ctx *fasthttp.RequestCtx) (string, os.FileInfo, error) {
 		}
 		filePath := path.Join(staticDir, requestPath[len(prefix):])
 
-		Error(filePath)
+		AppDebug(filePath)
 
 		if fi, err := os.Stat(filePath); fi != nil {
 			return filePath, fi, err

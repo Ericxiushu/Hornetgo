@@ -46,7 +46,7 @@ func (c *Contorller) Start() {
 }
 
 // errorPage errorPage
-func (c *Contorller) errorPage(str string) {
+func (c *Contorller) ErrorPage(str string) {
 
 	panic(str)
 

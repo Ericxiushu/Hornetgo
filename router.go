@@ -11,12 +11,12 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-type Router struct {
+type AppRouter struct {
 	*routing.Router
 }
 
-func NewRouter() *Router {
-	return &Router{
+func NewAppRouter() *AppRouter {
+	return &AppRouter{
 		routing.New(),
 	}
 }
@@ -26,17 +26,21 @@ func serverStaticRouter(ctx *routing.Context) error {
 }
 
 //SetRoute SetRoute
-func (c *Router) SetRoute(path string, obj interface{}, methods ...string) *routing.Route {
+func (c *AppRouter) SetRoute(path string, obj interface{}, methods ...string) *routing.Route {
 
 	if len(methods) > 0 {
-		switch strings.ToLower(methods[0]) {
-		case "get":
-			return c.Get(path, RegisterRouter(obj))
-		case "post":
-			return c.Post(path, RegisterRouter(obj))
-		default:
-			return c.Any(path, RegisterRouter(obj))
+
+		for _, v := range methods {
+			switch strings.ToLower(v) {
+			case "get":
+				return c.Get(path, RegisterRouter(obj))
+			case "post":
+				return c.Post(path, RegisterRouter(obj))
+			default:
+				return c.Any(path, RegisterRouter(obj))
+			}
 		}
+
 	}
 
 	return c.Any(path, RegisterRouter(obj))
@@ -52,13 +56,13 @@ func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 		reflectVal := reflect.ValueOf(obj)
 		t := reflect.Indirect(reflectVal).Type()
 
-		Error("reflect obj :", t)
+		AppDebug("reflect obj :", t)
 
 		vc := reflect.New(t)
 		execController, ok := vc.Interface().(ControllerIntface)
 
 		if !ok {
-			Error("not ok")
+			AppDebug("not ok")
 			panic("controller is not ControllerInterface")
 		}
 
@@ -84,7 +88,7 @@ func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 func recoverPanic(ctx *fasthttp.RequestCtx) {
 
 	if err := recover(); err != nil {
-		Error("Catch Panic : ", err)
+		AppDebug("Catch Panic : ", err)
 		ShowPage("error/errPage.html", map[interface{}]interface{}{"err_msg": err}, ctx)
 	}
 

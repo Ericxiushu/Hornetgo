@@ -29,7 +29,7 @@ func init() {
 				StaticDir: map[string]string{"/static": "static"},
 			},
 		},
-		Router: NewRouter(),
+		AppRouter: NewAppRouter(),
 	}
 }
 
@@ -40,7 +40,7 @@ const (
 
 type Hornet struct {
 	AppConfig *Config
-	Router    *Router
+	AppRouter *AppRouter
 }
 
 func Run() error {
@@ -49,7 +49,7 @@ func Run() error {
 
 	Info("ListenAndServe port :", HornetInfo.AppConfig.Port)
 
-	hander := HornetInfo.Router.HandleRequest
+	hander := HornetInfo.AppRouter.HandleRequest
 	if HornetInfo.AppConfig.EnableGzip {
 		hander = fasthttp.CompressHandler(hander)
 	}
@@ -67,7 +67,11 @@ func checkBeforeRun() {
 	// 注册静态资源路由
 	for path := range HornetInfo.AppConfig.WebConfig.StaticDir {
 		path = strings.TrimSuffix(path, "/") + "/*"
-		HornetInfo.Router.Any(path, serverStaticRouter)
+		HornetInfo.AppRouter.Any(path, serverStaticRouter)
 	}
 
+}
+
+func Router(path string, obj interface{}, methods ...string) {
+	HornetInfo.AppRouter.SetRoute(path, obj, methods...)
 }
