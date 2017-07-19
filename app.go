@@ -7,51 +7,50 @@ import (
 
 	"strings"
 
-	"errors"
-
 	"github.com/astaxie/beego/cache"
 )
 
 var (
-	HornetInfo    *Hornet
-	localCache, _ = cache.NewCache("memory", `{"interval":60}`)
+	HornetInfo     *Hornet
+	AppConfigInfo  *Config
+	TempRouterList []TempRouter
+	localCache, _  = cache.NewCache("memory", `{"interval":60}`)
 )
-
-func init() {
-	HornetInfo = &Hornet{
-		AppConfig: &Config{
-			AppName:              "Hornet",
-			runMode:              RunModeDev,
-			EnableGzip:           true,
-			EnableSession:        true,
-			EnableShowErrorsLine: true,
-			Port:                 8080,
-			WebConfig: WebConfig{
-				ViewsPath: "/views",
-				StaticDir: map[string]string{"/static": "static"},
-			},
-		},
-		AppRouter: NewAppRouter(),
-	}
-}
 
 type Hornet struct {
 	AppConfig *Config
 	AppRouter *AppRouter
 }
 
-func (c *Hornet) SetRunModel(s string) error {
+func init() {
 
-	if s != RunModeDev.ToString() && s != RunModeProd.ToString() {
-		return errors.New("not allowed runmodel")
+	AppConfigInfo = &Config{
+		AppName:              "Hornet",
+		RunMode:              RunModeDev,
+		EnableGzip:           true,
+		EnableSession:        true,
+		EnableShowErrorsLine: true,
+		Port:                 8080,
+		WebConfig: WebConfig{
+			ViewsPath: "/views",
+			StaticDir: map[string]string{"/static": "static"},
+		},
 	}
 
-	return nil
 }
 
 func Run() error {
 
+	HornetInfo = &Hornet{
+		AppConfig: AppConfigInfo,
+		AppRouter: NewAppRouter(),
+	}
+
 	checkBeforeRun()
+
+	for _, v := range TempRouterList {
+		HornetInfo.AppRouter.SetRoute(v.Path, v.Obj, v.Methods...)
+	}
 
 	Info("ListenAndServe port :", HornetInfo.AppConfig.Port)
 
@@ -76,8 +75,21 @@ func checkBeforeRun() {
 		HornetInfo.AppRouter.Any(path, serverStaticRouter)
 	}
 
+	// 检测runmodel
+	if HornetInfo.AppConfig.RunMode != RunModeDev && HornetInfo.AppConfig.RunMode != RunModeProd {
+		panic(" not allowed runmodel ")
+	}
+
 }
 
 func Router(path string, obj interface{}, methods ...string) {
-	HornetInfo.AppRouter.SetRoute(path, obj, methods...)
+	// HornetInfo.AppRouter.SetRoute(path, obj, methods...)
+
+	item := TempRouter{
+		Path:    path,
+		Obj:     obj,
+		Methods: methods,
+	}
+
+	TempRouterList = append(TempRouterList, item)
 }

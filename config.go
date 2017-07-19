@@ -2,7 +2,7 @@ package Hornetgo
 
 type Config struct {
 	AppName              string
-	runMode              RunMode
+	RunMode              RunMode
 	Port                 int
 	EnableGzip           bool
 	EnableSession        bool
@@ -36,4 +36,10 @@ type WebConfig struct {
 	EnableXSRF             bool
 	XSRFKey                string
 	XSRFExpire             int
+}
+
+type TempRouter struct {
+	Path    string
+	Obj     interface{}
+	Methods []string
 }
