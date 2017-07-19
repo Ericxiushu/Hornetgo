@@ -7,6 +7,8 @@ import (
 
 	"strings"
 
+	"errors"
+
 	"github.com/astaxie/beego/cache"
 )
 
@@ -19,7 +21,7 @@ func init() {
 	HornetInfo = &Hornet{
 		AppConfig: &Config{
 			AppName:              "Hornet",
-			RunMode:              RunModeDev,
+			runMode:              RunModeDev,
 			EnableGzip:           true,
 			EnableSession:        true,
 			EnableShowErrorsLine: true,
@@ -36,6 +38,15 @@ func init() {
 type Hornet struct {
 	AppConfig *Config
 	AppRouter *AppRouter
+}
+
+func (c *Hornet) SetRunModel(s string) error {
+
+	if s != RunModeDev.ToString() && s != RunModeProd.ToString() {
+		return errors.New("not allowed runmodel")
+	}
+
+	return nil
 }
 
 func Run() error {
