@@ -89,7 +89,7 @@ func recoverPanic(ctx *fasthttp.RequestCtx) {
 
 	if err := recover(); err != nil {
 		AppDebug("Catch Panic : ", err)
-		ShowPage("error/errPage.html", map[interface{}]interface{}{"err_msg": err}, ctx)
+		render("error/errPage.html", map[interface{}]interface{}{"err_msg": err}, ctx)
 	}
 
 }

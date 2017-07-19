@@ -13,19 +13,6 @@ import (
 	"strings"
 )
 
-func ShowPage(name string, data interface{}, ctx *fasthttp.RequestCtx) {
-
-	body, err := GetPageByTemplate(name, data)
-	if err != nil {
-		Error(err)
-		body = []byte("not find")
-	}
-
-	ctx.Response.Header.Set("Content-Type", "text/html; charset=utf-8")
-	ctx.Write(body)
-
-	return
-}
 
 func GetPageByDiy(name string) ([]byte, error) {
 
