@@ -21,6 +21,10 @@ func NewRouter() *Router {
 	}
 }
 
+func serverStaticRouter(ctx *routing.Context) error {
+	return staticHander(ctx.RequestCtx)
+}
+
 //SetRoute SetRoute
 func (c *Router) SetRoute(path string, obj interface{}, methods ...string) *routing.Route {
 

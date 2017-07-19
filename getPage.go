@@ -24,8 +24,6 @@ func ShowPage(name string, data interface{}, ctx *fasthttp.RequestCtx) {
 	ctx.Response.Header.Set("Content-Type", "text/html; charset=utf-8")
 	ctx.Write(body)
 
-	doGzip(ctx)
-
 	return
 }
 
@@ -106,8 +104,6 @@ func render(name string, data interface{}, ctx *fasthttp.RequestCtx) {
 
 	ctx.Response.Header.Set("Content-Type", "text/html; charset=utf-8")
 	ctx.Write(body)
-
-	doGzip(ctx)
 
 	return
 }

@@ -79,3 +79,10 @@ func Trace(v ...interface{}) {
 func generateFmtStr(n int) string {
 	return strings.Repeat("%v ", n)
 }
+
+// AppDebug 测试输出
+func AppDebug(v ...interface{}) {
+	if HornetInfo.AppConfig.RunMode == "dev" {
+		Error(v...)
+	}
+}

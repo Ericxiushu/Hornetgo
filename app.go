@@ -5,6 +5,8 @@ import (
 
 	"github.com/valyala/fasthttp"
 
+	"strings"
+
 	"github.com/astaxie/beego/cache"
 )
 
@@ -24,6 +26,7 @@ func init() {
 			Port:                 8080,
 			WebConfig: WebConfig{
 				ViewsPath: "/views",
+				StaticDir: map[string]string{"/static": "static"},
 			},
 		},
 		Router: NewRouter(),
@@ -46,12 +49,25 @@ func Run() error {
 
 	Info("ListenAndServe port :", HornetInfo.AppConfig.Port)
 
-	return fasthttp.ListenAndServe(fmt.Sprintf(":%d", HornetInfo.AppConfig.Port), HornetInfo.Router.HandleRequest)
+	hander := HornetInfo.Router.HandleRequest
+	if HornetInfo.AppConfig.EnableGzip {
+		hander = fasthttp.CompressHandler(hander)
+	}
+
+	return fasthttp.ListenAndServe(fmt.Sprintf(":%d", HornetInfo.AppConfig.Port), hander)
 }
 
 func checkBeforeRun() {
+
+	// 检测session
 	if HornetInfo.AppConfig.EnableSession && mySessions == nil {
 		panic("manager session error")
+	}
+
+	// 注册静态资源路由
+	for path := range HornetInfo.AppConfig.WebConfig.StaticDir {
+		path = strings.TrimSuffix(path, "/") + "/*"
+		HornetInfo.Router.Any(path, serverStaticRouter)
 	}
 
 }

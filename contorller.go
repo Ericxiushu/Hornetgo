@@ -11,10 +11,9 @@ import (
 )
 
 type Contorller struct {
-	Ctx       *routing.Context
-	Data      map[interface{}]interface{}
-	Session   sessions.Session
-	YarWriter *YarWriter
+	Ctx     *routing.Context
+	Data    map[interface{}]interface{}
+	Session sessions.Session
 }
 
 type ControllerIntface interface {
@@ -28,9 +27,6 @@ func init() {
 func (c *Contorller) Init(ctx *routing.Context, session sessions.Session) {
 
 	c.Ctx = ctx
-	c.YarWriter = &YarWriter{
-		Ctx: ctx,
-	}
 
 	if strings.ToLower(string(c.Ctx.Request.Header.Peek("Content-Encoding"))) == "gzip" {
 		body, err := c.Ctx.Request.BodyGunzip()
@@ -77,8 +73,6 @@ func (c *Contorller) ServeJSON() {
 
 	c.Ctx.Write(data)
 
-	doGzip(c.Ctx.RequestCtx)
-
 	return
 }
 
@@ -92,7 +86,7 @@ func (c *Contorller) SetSession(key string, value interface{}) {
 	c.Session.Set(key, value)
 }
 
-func (c *Contorller) sendError(errCode int, errMsg string) {
+func (c *Contorller) SendError(errCode int, errMsg string) {
 	c.Data["json"] = map[string]interface{}{
 		"err_code": errCode,
 		"err_msg":  errMsg,
@@ -101,7 +95,7 @@ func (c *Contorller) sendError(errCode int, errMsg string) {
 	return
 }
 
-func (c *Contorller) sendResult(result interface{}) {
+func (c *Contorller) SendResult(result interface{}) {
 	c.Data["json"] = map[string]interface{}{
 		"err_code": 0,
 		"err_msg":  "success",
@@ -110,7 +104,7 @@ func (c *Contorller) sendResult(result interface{}) {
 	return
 }
 
-func (c *Contorller) sendSuccess() {
+func (c *Contorller) SendSuccess() {
 	c.Data["json"] = map[string]interface{}{
 		"err_code": 0,
 		"err_msg":  "success",
@@ -120,7 +114,7 @@ func (c *Contorller) sendSuccess() {
 	return
 }
 
-func (c *Contorller) sendOriInfo(result interface{}) {
+func (c *Contorller) SendOriInfo(result interface{}) {
 	c.Data["json"] = result
 	c.ServeJSON()
 	return
