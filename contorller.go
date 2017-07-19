@@ -119,3 +119,13 @@ func (c *Contorller) SendOriInfo(result interface{}) {
 	c.ServeJSON()
 	return
 }
+
+// Redirect Redirect
+func (c *Contorller) Redirect(url string, code int) {
+	c.Ctx.Redirect(url, code)
+}
+
+// GetString GetString
+func (c *Contorller) GetString(key string) string {
+	return string(c.Ctx.QueryArgs().Peek(key))
+}
