@@ -12,7 +12,7 @@ import (
 
 var (
 	HornetInfo     *Hornet
-	AppConfigInfo  *Config
+	AppConfig      *Config
 	TempRouterList []TempRouter
 	localCache, _  = cache.NewCache("memory", `{"interval":60}`)
 )
@@ -24,7 +24,7 @@ type Hornet struct {
 
 func init() {
 
-	AppConfigInfo = &Config{
+	AppConfig = &Config{
 		AppName:              "Hornet",
 		RunMode:              RunModeDev,
 		EnableGzip:           true,
@@ -42,7 +42,7 @@ func init() {
 func Run() error {
 
 	HornetInfo = &Hornet{
-		AppConfig: AppConfigInfo,
+		AppConfig: AppConfig,
 		AppRouter: NewAppRouter(),
 	}
 
