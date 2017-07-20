@@ -13,7 +13,6 @@ import (
 	"strings"
 )
 
-
 func GetPageByDiy(name string) ([]byte, error) {
 
 	result := localCache.Get(name)
@@ -41,7 +40,7 @@ func GetPageByDiy(name string) ([]byte, error) {
 // GetPageByTemplate GetPageByTemplate
 func GetPageByTemplate(name string, data interface{}) ([]byte, error) {
 
-	fileName, err := getFileName(name)
+	pageData, err := getPageFile(name)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -50,7 +49,7 @@ func GetPageByTemplate(name string, data interface{}) ([]byte, error) {
 
 	t := template.New(nameList[len(nameList)-1]).Delims("<%", "%>")
 
-	t, err = t.ParseFiles(fileName)
+	t, err = t.Parse(string(pageData))
 	if err != nil {
 		return []byte{}, err
 	}
@@ -63,6 +62,30 @@ func GetPageByTemplate(name string, data interface{}) ([]byte, error) {
 	}
 
 	return w.Bytes(), nil
+
+}
+
+func getPageFile(name string) ([]byte, error) {
+
+	result := localCache.Get(name)
+
+	if by, ok := result.([]byte); ok {
+		return by, nil
+	}
+
+	fileName, err := getFileName(name)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	data, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		Error(err)
+	} else {
+		localCache.Put(name, data, time.Hour*1)
+	}
+
+	return data, err
 
 }
 
