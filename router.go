@@ -36,8 +36,10 @@ func (c *AppRouter) SetRoute(path string, obj interface{}, methods ...string) *r
 				return c.Get(path, RegisterRouter(obj))
 			case "post":
 				return c.Post(path, RegisterRouter(obj))
-			default:
+			case "any":
 				return c.Any(path, RegisterRouter(obj))
+			default:
+				panic("not support ")
 			}
 		}
 

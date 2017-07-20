@@ -51,12 +51,12 @@ func Run() error {
 		HornetInfo.AppRouter.SetRoute(v.Path, v.Obj, v.Methods...)
 	}
 
-	Info("ListenAndServe port :", HornetInfo.AppConfig.Port)
-
 	hander := HornetInfo.AppRouter.HandleRequest
 	if HornetInfo.AppConfig.EnableGzip {
 		hander = fasthttp.CompressHandler(hander)
 	}
+
+	Info("ListenAndServe port :", HornetInfo.AppConfig.Port)
 
 	return fasthttp.ListenAndServe(fmt.Sprintf(":%d", HornetInfo.AppConfig.Port), hander)
 }

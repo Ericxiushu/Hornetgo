@@ -10,8 +10,6 @@ type Config struct {
 	WebConfig            WebConfig
 }
 
-type RunMode string
-
 const (
 	RunModeDev  = "dev"
 	RunModeProd = "prod"
