@@ -83,6 +83,6 @@ func generateFmtStr(n int) string {
 // AppDebug 测试输出
 func AppDebug(v ...interface{}) {
 	if HornetInfo.AppConfig.RunMode == RunModeDev {
-		Error(v...)
+		logs.Error(generateFmtStr(len(v)), v...)
 	}
 }
