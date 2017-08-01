@@ -38,6 +38,10 @@ func init() {
 			ViewsPath: "/views",
 			StaticDir: map[string]string{"/static": "static"},
 		},
+		Admin: Admin{
+			PprofCPU: false,
+			PprofMem: false,
+		},
 	}
 
 	HornetInfo = &Hornet{
