@@ -88,6 +88,8 @@ func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 
 		execController.Start()
 
+		closeAdmin()
+
 		return nil
 	}
 

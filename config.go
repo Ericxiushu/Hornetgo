@@ -1,5 +1,9 @@
 package Hornetgo
 
+import (
+	"os"
+)
+
 type Config struct {
 	AppName              string
 	RunMode              string
@@ -8,12 +12,20 @@ type Config struct {
 	EnableSession        bool
 	EnableShowErrorsLine bool
 	WebConfig            WebConfig
+	Admin                Admin
 }
 
 const (
 	RunModeDev  = "dev"
 	RunModeProd = "prod"
 )
+
+type Admin struct {
+	PprofMem bool
+	PprofCPU bool
+	CPUFile  *os.File
+	MemFile  *os.File
+}
 
 // WebConfig holds web related config
 type WebConfig struct {
