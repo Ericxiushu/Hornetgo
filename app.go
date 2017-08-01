@@ -2,9 +2,6 @@ package Hornetgo
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"runtime/pprof"
 
 	"github.com/valyala/fasthttp"
 
@@ -54,8 +51,6 @@ func Run() error {
 
 	checkBeforeRun()
 
-	admin()
-
 	for _, v := range TempRouterList {
 		HornetInfo.AppRouter.SetRoute(v.Path, v.Obj, v.Methods...)
 	}
@@ -102,32 +97,32 @@ func Router(path string, obj interface{}, methods ...string) {
 	TempRouterList = append(TempRouterList, item)
 }
 
-func admin() {
+// func admin() {
 
-	var err error
+// 	var err error
 
-	if HornetInfo.AppConfig.Admin.PprofCPU {
-		HornetInfo.AppConfig.Admin.CPUFile, err = os.OpenFile("./tmp/cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
-		if err != nil {
-			log.Fatal(err)
-		} else {
-			pprof.StartCPUProfile(HornetInfo.AppConfig.Admin.CPUFile)
-		}
-	}
+// 	if HornetInfo.AppConfig.Admin.PprofCPU {
+// 		HornetInfo.AppConfig.Admin.CPUFile, err = os.OpenFile("./cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		} else {
+// 			pprof.StartCPUProfile(HornetInfo.AppConfig.Admin.CPUFile)
+// 		}
+// 	}
 
-	if HornetInfo.AppConfig.Admin.PprofMem {
-		HornetInfo.AppConfig.Admin.MemFile, err = os.OpenFile("./tmp/mem.out", os.O_RDWR|os.O_CREATE, 0644)
-		if err != nil {
-			log.Fatal(err)
-		} else {
-			pprof.WriteHeapProfile(HornetInfo.AppConfig.Admin.MemFile)
-		}
-	}
+// 	if HornetInfo.AppConfig.Admin.PprofMem {
+// 		HornetInfo.AppConfig.Admin.MemFile, err = os.OpenFile("./mem.out", os.O_RDWR|os.O_CREATE, 0644)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		} else {
+// 			pprof.WriteHeapProfile(HornetInfo.AppConfig.Admin.MemFile)
+// 		}
+// 	}
 
-}
+// }
 
-func closeAdmin() {
-	pprof.StopCPUProfile()
-	HornetInfo.AppConfig.Admin.MemFile.Close()
-	HornetInfo.AppConfig.Admin.CPUFile.Close()
-}
+// func closeAdmin() {
+// 	pprof.StopCPUProfile()
+// 	HornetInfo.AppConfig.Admin.MemFile.Close()
+// 	HornetInfo.AppConfig.Admin.CPUFile.Close()
+// }
