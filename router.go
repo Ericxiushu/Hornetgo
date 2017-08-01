@@ -5,7 +5,7 @@ import (
 
 	"strings"
 
-	"github.com/clevergo/sessions"
+	"github.com/kataras/go-sessions"
 
 	"github.com/qiangxue/fasthttp-routing"
 	"github.com/valyala/fasthttp"
@@ -68,14 +68,13 @@ func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 			panic("controller is not ControllerInterface")
 		}
 
-		var session *sessions.Session
+		var session sessions.Session
 		if HornetInfo.AppConfig.EnableSession {
-			sessionKey := "GOSESSION"
-			if len(HornetInfo.AppConfig.AppName) > 0 {
-				sessionKey = HornetInfo.AppConfig.AppName
-			}
-			session, _ = store.Get(ctx.RequestCtx, sessionKey)
-			defer session.Save(ctx.RequestCtx)
+			session = mySessions.StartFasthttp(ctx.RequestCtx)
+
+			defer func() {
+				// todo : 关闭session
+			}()
 		}
 
 		if strings.ToLower(string(ctx.Request.Header.Peek("Content-Encoding"))) == "gzip" {

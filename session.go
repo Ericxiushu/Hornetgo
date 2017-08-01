@@ -2,14 +2,15 @@ package Hornetgo
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/caarlos0/env"
-	"github.com/clevergo/sessions"
+	"github.com/kataras/go-sessions"
+	"github.com/kataras/go-sessions/sessiondb/redis"
+	"github.com/kataras/go-sessions/sessiondb/redis/service"
 )
 
-var (
-	store sessions.Store
-)
+var mySessions sessions.Sessions
 
 func init() {
 
@@ -31,11 +32,22 @@ func init() {
 		panic("redis config error")
 	}
 
-	store, err = sessions.NewRediStore(10, "tcp", fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), "", []byte("secret-key"))
-	if err != nil {
-		panic(err)
-	}
+	db := redis.New(service.Config{Network: service.DefaultRedisNetwork,
+		Addr:          fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Password:      "",
+		Database:      "",
+		MaxIdle:       0,
+		MaxActive:     0,
+		IdleTimeout:   service.DefaultRedisIdleTimeout,
+		Prefix:        "",
+		MaxAgeSeconds: 3600})
 
-	store.(*sessions.RediStore).SetMaxAge(60 * 30)
+	mySessionsConfig := sessions.Config{Cookie: HornetInfo.AppConfig.AppName,
+		Expires:                     time.Duration(1) * time.Hour,
+		DisableSubdomainPersistence: false,
+	}
+	mySessions = sessions.New(mySessionsConfig)
+
+	mySessions.UseDatabase(db)
 
 }
