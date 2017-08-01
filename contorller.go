@@ -3,7 +3,7 @@ package Hornetgo
 import (
 	"encoding/json"
 
-	"github.com/kataras/go-sessions"
+	"github.com/clevergo/sessions"
 	"github.com/pkg/errors"
 
 	"github.com/qiangxue/fasthttp-routing"
@@ -12,18 +12,18 @@ import (
 type Contorller struct {
 	Ctx     *routing.Context
 	Data    map[interface{}]interface{}
-	Session sessions.Session
+	Session *sessions.Session
 }
 
 type ControllerIntface interface {
-	Init(*routing.Context, sessions.Session)
+	Init(*routing.Context, *sessions.Session)
 	Start()
 }
 
 func init() {
 }
 
-func (c *Contorller) Init(ctx *routing.Context, session sessions.Session) {
+func (c *Contorller) Init(ctx *routing.Context, session *sessions.Session) {
 
 	c.Ctx = ctx
 
@@ -70,12 +70,12 @@ func (c *Contorller) ServeJSON() {
 
 // GetSession GetSession
 func (c *Contorller) GetSession(key string) interface{} {
-	return c.Session.Get(key)
+	return c.Session.Values[key]
 }
 
 // SetSession SetSession
 func (c *Contorller) SetSession(key string, value interface{}) {
-	c.Session.Set(key, value)
+	c.Session.Values[key] = value
 }
 
 func (c *Contorller) SendError(errCode int, errMsg string) {
