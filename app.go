@@ -67,6 +67,8 @@ func Run() error {
 
 func checkBeforeRun() {
 
+	SetSession()
+
 	// 检测session
 	if HornetInfo.AppConfig.EnableSession && mySessions == nil {
 		panic("manager session error")

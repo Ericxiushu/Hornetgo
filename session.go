@@ -14,6 +14,10 @@ var mySessions sessions.Sessions
 
 func init() {
 
+}
+
+func SetSession() {
+
 	if !HornetInfo.AppConfig.EnableSession {
 		return
 	}
@@ -36,7 +40,7 @@ func init() {
 		Addr:          fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 		Password:      "",
 		Database:      "",
-		MaxIdle:       0,
+		MaxIdle:       5,
 		MaxActive:     0,
 		IdleTimeout:   service.DefaultRedisIdleTimeout,
 		Prefix:        "",
