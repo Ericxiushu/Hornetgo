@@ -36,4 +36,6 @@ func init() {
 		panic(err)
 	}
 
+	store.(*sessions.RediStore).SetMaxAge(60 * 30)
+
 }

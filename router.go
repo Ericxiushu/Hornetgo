@@ -70,7 +70,11 @@ func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 
 		var session *sessions.Session
 		if HornetInfo.AppConfig.EnableSession {
-			session, _ = store.Get(ctx.RequestCtx, "GOSESSION")
+			sessionKey := "GOSESSION"
+			if len(HornetInfo.AppConfig.AppName) > 0 {
+				sessionKey = HornetInfo.AppConfig.AppName
+			}
+			session, _ = store.Get(ctx.RequestCtx, sessionKey)
 			defer session.Save(ctx.RequestCtx)
 		}
 
