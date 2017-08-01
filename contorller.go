@@ -2,7 +2,6 @@ package Hornetgo
 
 import (
 	"encoding/json"
-	"strings"
 
 	"github.com/kataras/go-sessions"
 	"github.com/pkg/errors"
@@ -27,13 +26,6 @@ func init() {
 func (c *Contorller) Init(ctx *routing.Context, session sessions.Session) {
 
 	c.Ctx = ctx
-
-	if strings.ToLower(string(c.Ctx.Request.Header.Peek("Content-Encoding"))) == "gzip" {
-		body, err := c.Ctx.Request.BodyGunzip()
-		if err == nil {
-			c.Ctx.Request.SetBody(body)
-		}
-	}
 
 	c.Data = make(map[interface{}]interface{}, 0)
 

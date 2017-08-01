@@ -77,6 +77,13 @@ func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 			}()
 		}
 
+		if strings.ToLower(string(ctx.Request.Header.Peek("Content-Encoding"))) == "gzip" {
+			body, err := ctx.Request.BodyGunzip()
+			if err == nil {
+				ctx.Request.SetBody(body)
+			}
+		}
+
 		execController.Init(ctx, session)
 
 		execController.Start()
