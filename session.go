@@ -48,7 +48,7 @@ func SetSession() {
 
 	mySessionsConfig := sessions.Config{Cookie: HornetInfo.AppConfig.AppName,
 		Expires:                     time.Duration(1) * time.Hour,
-		DisableSubdomainPersistence: false,
+		DisableSubdomainPersistence: true,
 	}
 	mySessions = sessions.New(mySessionsConfig)
 
