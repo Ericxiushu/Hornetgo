@@ -93,6 +93,7 @@ func (c *Contorller) SendResult(result interface{}) {
 		"err_msg":  "success",
 		"data":     result,
 	}
+	c.ServeJSON()
 	return
 }
 
