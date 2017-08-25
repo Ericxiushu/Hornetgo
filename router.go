@@ -68,7 +68,7 @@ func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
 			panic("controller is not ControllerInterface")
 		}
 
-		var session sessions.Session
+		var session *sessions.Session
 		if HornetInfo.AppConfig.EnableSession {
 			session = mySessions.StartFasthttp(ctx.RequestCtx)
 

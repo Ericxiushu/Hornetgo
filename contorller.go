@@ -12,18 +12,18 @@ import (
 type Contorller struct {
 	Ctx     *routing.Context
 	Data    map[interface{}]interface{}
-	Session sessions.Session
+	Session *sessions.Session
 }
 
 type ControllerIntface interface {
-	Init(*routing.Context, sessions.Session)
+	Init(*routing.Context, *sessions.Session)
 	Start()
 }
 
 func init() {
 }
 
-func (c *Contorller) Init(ctx *routing.Context, session sessions.Session) {
+func (c *Contorller) Init(ctx *routing.Context, session *sessions.Session) {
 
 	c.Ctx = ctx
 

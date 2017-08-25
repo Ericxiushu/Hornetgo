@@ -10,7 +10,7 @@ import (
 	"github.com/kataras/go-sessions/sessiondb/redis/service"
 )
 
-var mySessions sessions.Sessions
+var mySessions *sessions.Sessions
 
 func init() {
 
@@ -37,14 +37,13 @@ func SetSession() {
 	}
 
 	db := redis.New(service.Config{Network: service.DefaultRedisNetwork,
-		Addr:          fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		Password:      "",
-		Database:      "",
-		MaxIdle:       5,
-		MaxActive:     0,
-		IdleTimeout:   service.DefaultRedisIdleTimeout,
-		Prefix:        "",
-		MaxAgeSeconds: 3600})
+		Addr:        fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Password:    "",
+		Database:    "",
+		MaxIdle:     5,
+		MaxActive:   0,
+		IdleTimeout: service.DefaultRedisIdleTimeout,
+		Prefix:      ""})
 
 	mySessionsConfig := sessions.Config{Cookie: HornetInfo.AppConfig.AppName,
 		Expires:                     time.Duration(1) * time.Hour,
