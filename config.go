@@ -1,6 +1,9 @@
 package Hornetgo
 
 import (
+	"bytes"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -55,9 +58,23 @@ type TempRouter struct {
 type HornetContent struct {
 	http.ResponseWriter
 	*http.Request
+	Body     []byte
+	muxQuery map[string]string
 }
 
 func (c *HornetContent) Write(b []byte) (int, error) {
 
+	buf := &bytes.Buffer{}
+
+	buf.Write(b)
+
+	io.Copy(c.ResponseWriter, buf)
+
 	return len(b), nil
+}
+
+func (c *HornetContent) CopyBody() {
+	c.Body, _ = ioutil.ReadAll(c.Request.Body)
+	c.Request.Body.Close()
+	return
 }

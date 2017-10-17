@@ -51,7 +51,7 @@ func (c *Contorller) ServeJSON() {
 
 	data, err := json.Marshal(c.Data["json"])
 	if err == nil {
-		c.Ctx.Response.Header.Set("Content-Type", "application/json; charset=utf-8")
+		c.Ctx.ResponseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
 	} else {
 		Error(errors.WithMessage(err, "json.Marshal"))
 		data = []byte(err.Error())
@@ -99,5 +99,11 @@ func (c *Contorller) SendOriInfo(result interface{}) {
 
 // GetString GetString
 func (c *Contorller) GetString(key string) string {
-	return c.Ctx.URL.Query().Get(key)
+
+	result := c.Ctx.muxQuery[key]
+	if len(result) < 1 {
+		result = c.Ctx.URL.Query().Get(key)
+	}
+
+	return result
 }

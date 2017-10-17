@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	HornetInfo     *Hornet
-	AppConfig      *Config
-	TempRouterList []*TempRouter
-	localCache, _  = cache.NewCache("memory", `{"interval":60}`)
+	HornetInfo    *Hornet
+	AppConfig     *Config
+	TempRouterMap = make(map[string][]*TempRouter, 0)
+	localCache, _ = cache.NewCache("memory", `{"interval":60}`)
 )
 
 type Hornet struct {
@@ -51,23 +51,30 @@ func Run() error {
 
 	checkBeforeRun()
 
-	for _, v := range TempRouterList {
-		HornetInfo.AppRouter.RegisterRouter(v)
+	for k, v := range TempRouterMap {
+		HornetInfo.AppRouter.SetRouter(k, v)
 	}
+
+	fmt.Println(TempRouterMap)
 
 	HornetInfo.AppRouter.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		t, err := route.GetPathTemplate()
 		if err != nil {
+			fmt.Println(err)
 			return err
 		}
 		// p will contain regular expression is compatible with regular expression in Perl, Python, and other languages.
 		// for instance the regular expression for path '/articles/{id}' will be '^/articles/(?P<v0>[^/]+)$'
 		p, err := route.GetPathRegexp()
 		if err != nil {
+			fmt.Println(err)
+
 			return err
 		}
 		m, err := route.GetMethods()
 		if err != nil {
+			fmt.Println(err)
+
 			return err
 		}
 		fmt.Println(strings.Join(m, ","), t, p)
@@ -89,8 +96,7 @@ func checkBeforeRun() {
 
 }
 
-func Router(path string, obj interface{}, action string, methods ...string) {
-	// HornetInfo.AppRouter.SetRoute(path, obj, methods...)
+func Router(pathPre, path string, obj interface{}, action string, methods ...string) {
 
 	item := &TempRouter{
 		Path:    path,
@@ -99,5 +105,10 @@ func Router(path string, obj interface{}, action string, methods ...string) {
 		Action:  action,
 	}
 
-	TempRouterList = append(TempRouterList, item)
+	if _, ok := TempRouterMap[pathPre]; !ok {
+		TempRouterMap[pathPre] = make([]*TempRouter, 0)
+	}
+
+	TempRouterMap[pathPre] = append(TempRouterMap[pathPre], item)
+
 }

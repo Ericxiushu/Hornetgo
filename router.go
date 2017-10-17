@@ -18,26 +18,30 @@ func NewAppRouter() *AppRouter {
 	}
 }
 
-//SetRoute SetRoute
-func (c *AppRouter) SetRoute(path string, obj interface{}, action string) *AppRouter {
+func (c *AppRouter) SetRouter(pathPre string, r []*TempRouter) *AppRouter {
 
-	r := &TempRouter{
-		Path:   path,
-		Obj:    obj,
-		Action: action,
+	var t *mux.Router
+	if len(pathPre) > 0 {
+		t = c.PathPrefix(pathPre).Subrouter()
+
+		for _, v := range r {
+			newR := t.Handle(v.Path, v)
+			if len(v.Methods) > 0 {
+				newR.Methods(v.Methods...)
+			}
+		}
+
+	} else {
+
+		for _, v := range r {
+			newR := c.Handle(v.Path, v)
+			if len(v.Methods) > 0 {
+				newR.Methods(v.Methods...)
+			}
+		}
+
 	}
 
-	c.RegisterRouter(r)
-	return c
-
-}
-
-func (c *AppRouter) RegisterRouter(r *TempRouter) *AppRouter {
-
-	t := c.Handle(r.Path, r)
-	if len(r.Methods) > 0 {
-		t.Methods(r.Methods...)
-	}
 	return c
 }
 
@@ -46,7 +50,10 @@ func (t *TempRouter) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	hornetContent := &HornetContent{
 		ResponseWriter: rw,
 		Request:        r,
+		muxQuery:       mux.Vars(r),
 	}
+
+	hornetContent.CopyBody()
 
 	defer recoverPanic(hornetContent)
 
@@ -84,7 +91,7 @@ func recoverPanic(ctx *HornetContent) {
 		AppDebug("Catch Panic : ", err)
 		// render("error/errPage.html", map[interface{}]interface{}{"err_msg": err}, ctx)
 
-		ctx.Response.Header.Set("Content-Type", "application/json; charset=utf-8")
+		ctx.ResponseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
 		ctx.Write([]byte("error"))
 	}
 
