@@ -3,102 +3,89 @@ package Hornetgo
 import (
 	"reflect"
 
-	"strings"
+	"net/http"
 
-	"github.com/kataras/go-sessions"
-
-	"github.com/qiangxue/fasthttp-routing"
-	"github.com/valyala/fasthttp"
+	"github.com/gorilla/mux"
 )
 
 type AppRouter struct {
-	*routing.Router
+	*mux.Router
 }
 
 func NewAppRouter() *AppRouter {
 	return &AppRouter{
-		routing.New(),
+		mux.NewRouter(),
 	}
-}
-
-func serverStaticRouter(ctx *routing.Context) error {
-	return staticHander(ctx.RequestCtx)
 }
 
 //SetRoute SetRoute
-func (c *AppRouter) SetRoute(path string, obj interface{}, methods ...string) *routing.Route {
+func (c *AppRouter) SetRoute(path string, obj interface{}, action string) *AppRouter {
 
-	if len(methods) > 0 {
-
-		for _, v := range methods {
-			switch strings.ToLower(v) {
-			case "get":
-				return c.Get(path, RegisterRouter(obj))
-			case "post":
-				return c.Post(path, RegisterRouter(obj))
-			case "any":
-				return c.Any(path, RegisterRouter(obj))
-			default:
-				panic("not support ")
-			}
-		}
-
+	r := &TempRouter{
+		Path:   path,
+		Obj:    obj,
+		Action: action,
 	}
 
-	return c.Any(path, RegisterRouter(obj))
+	c.RegisterRouter(r)
+	return c
 
 }
 
-func RegisterRouter(obj interface{}) func(ctx *routing.Context) error {
+func (c *AppRouter) RegisterRouter(r *TempRouter) *AppRouter {
 
-	return func(ctx *routing.Context) error {
+	t := c.Handle(r.Path, r)
+	if len(r.Methods) > 0 {
+		t.Methods(r.Methods...)
+	}
+	return c
+}
 
-		defer recoverPanic(ctx.RequestCtx)
+func (t *TempRouter) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
-		reflectVal := reflect.ValueOf(obj)
-		t := reflect.Indirect(reflectVal).Type()
-
-		AppDebug("reflect obj :", t)
-
-		vc := reflect.New(t)
-		execController, ok := vc.Interface().(ControllerIntface)
-
-		if !ok {
-			AppDebug("not ok")
-			panic("controller is not ControllerInterface")
-		}
-
-		var session *sessions.Session
-		if HornetInfo.AppConfig.EnableSession {
-			session = mySessions.StartFasthttp(ctx.RequestCtx)
-
-			defer func() {
-				// todo : 关闭session
-			}()
-		}
-
-		if strings.ToLower(string(ctx.Request.Header.Peek("Content-Encoding"))) == "gzip" {
-			body, err := ctx.Request.BodyGunzip()
-			if err == nil {
-				ctx.Request.SetBody(body)
-			}
-		}
-
-		execController.Init(ctx, session)
-
-		execController.Start()
-
-		return nil
+	hornetContent := &HornetContent{
+		ResponseWriter: rw,
+		Request:        r,
 	}
 
+	defer recoverPanic(hornetContent)
+
+	reflectVal := reflect.ValueOf(t.Obj)
+	tc := reflect.Indirect(reflectVal).Type()
+
+	AppDebug("reflect obj :", tc)
+
+	vc := reflect.New(tc)
+	execController, ok := vc.Interface().(ControllerIntface)
+
+	if !ok {
+		AppDebug("not ok")
+		panic("controller is not ControllerInterface")
+	}
+
+	execController.Init(hornetContent)
+
+	execController.Start()
+
+	var in []reflect.Value
+	action := vc.MethodByName(t.Action)
+
+	if action.IsValid() {
+		action.Call(in)
+	} else {
+		panic("action is not exist")
+	}
 }
 
 // recoverPanic recoverPanic
-func recoverPanic(ctx *fasthttp.RequestCtx) {
+func recoverPanic(ctx *HornetContent) {
 
 	if err := recover(); err != nil {
 		AppDebug("Catch Panic : ", err)
-		render("error/errPage.html", map[interface{}]interface{}{"err_msg": err}, ctx)
+		// render("error/errPage.html", map[interface{}]interface{}{"err_msg": err}, ctx)
+
+		ctx.Response.Header.Set("Content-Type", "application/json; charset=utf-8")
+		ctx.Write([]byte("error"))
 	}
 
 }

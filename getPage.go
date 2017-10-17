@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/valyala/fasthttp"
-
 	"strings"
 )
 
@@ -104,7 +102,7 @@ func getFileName(name string) (string, error) {
 
 }
 
-func render(name string, data interface{}, ctx *fasthttp.RequestCtx) {
+func render(name string, data interface{}, ctx *HornetContent) {
 
 	body, err := GetPageByTemplate(name, data)
 	if err != nil {

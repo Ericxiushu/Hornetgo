@@ -1,6 +1,7 @@
 package Hornetgo
 
 import (
+	"net/http"
 	"os"
 )
 
@@ -47,5 +48,16 @@ type WebConfig struct {
 type TempRouter struct {
 	Path    string
 	Obj     interface{}
+	Action  string
 	Methods []string
+}
+
+type HornetContent struct {
+	http.ResponseWriter
+	*http.Request
+}
+
+func (c *HornetContent) Write(b []byte) (int, error) {
+
+	return len(b), nil
 }

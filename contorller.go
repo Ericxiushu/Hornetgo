@@ -3,38 +3,32 @@ package Hornetgo
 import (
 	"encoding/json"
 
-	"github.com/kataras/go-sessions"
 	"github.com/pkg/errors"
-
-	"github.com/qiangxue/fasthttp-routing"
 )
 
 type Contorller struct {
-	Ctx     *routing.Context
-	Data    map[interface{}]interface{}
-	Session *sessions.Session
+	Ctx  *HornetContent
+	Data map[interface{}]interface{}
 }
 
 type ControllerIntface interface {
-	Init(*routing.Context, *sessions.Session)
+	Init(*HornetContent)
 	Start()
 }
 
 func init() {
 }
 
-func (c *Contorller) Init(ctx *routing.Context, session *sessions.Session) {
+func (c *Contorller) Init(ctx *HornetContent) {
 
 	c.Ctx = ctx
 
 	c.Data = make(map[interface{}]interface{}, 0)
 
-	c.Session = session
-
 }
 
 func (c *Contorller) Start() {
-	panic("Method Not Allowed")
+	// panic("Method Not Allowed")
 }
 
 // errorPage errorPage
@@ -47,7 +41,7 @@ func (c *Contorller) ErrorPage(str string) {
 // Render Render
 func (c *Contorller) Render(name string) {
 
-	render(name, c.Data, c.Ctx.RequestCtx)
+	render(name, c.Data, c.Ctx)
 
 	return
 }
@@ -66,16 +60,6 @@ func (c *Contorller) ServeJSON() {
 	c.Ctx.Write(data)
 
 	return
-}
-
-// GetSession GetSession
-func (c *Contorller) GetSession(key string) interface{} {
-	return c.Session.Get(key)
-}
-
-// SetSession SetSession
-func (c *Contorller) SetSession(key string, value interface{}) {
-	c.Session.Set(key, value)
 }
 
 func (c *Contorller) SendError(errCode int, errMsg string) {
@@ -113,12 +97,7 @@ func (c *Contorller) SendOriInfo(result interface{}) {
 	return
 }
 
-// Redirect Redirect
-func (c *Contorller) Redirect(url string, code int) {
-	c.Ctx.Redirect(url, code)
-}
-
 // GetString GetString
 func (c *Contorller) GetString(key string) string {
-	return string(c.Ctx.QueryArgs().Peek(key))
+	return c.Ctx.URL.Query().Get(key)
 }

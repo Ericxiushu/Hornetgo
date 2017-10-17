@@ -2,18 +2,18 @@ package Hornetgo
 
 import (
 	"fmt"
-
-	"github.com/valyala/fasthttp"
-
 	"strings"
 
+	"net/http"
+
 	"github.com/astaxie/beego/cache"
+	"github.com/gorilla/mux"
 )
 
 var (
 	HornetInfo     *Hornet
 	AppConfig      *Config
-	TempRouterList []TempRouter
+	TempRouterList []*TempRouter
 	localCache, _  = cache.NewCache("memory", `{"interval":60}`)
 )
 
@@ -52,33 +52,35 @@ func Run() error {
 	checkBeforeRun()
 
 	for _, v := range TempRouterList {
-		HornetInfo.AppRouter.SetRoute(v.Path, v.Obj, v.Methods...)
+		HornetInfo.AppRouter.RegisterRouter(v)
 	}
 
-	hander := HornetInfo.AppRouter.HandleRequest
-	if HornetInfo.AppConfig.EnableGzip {
-		hander = fasthttp.CompressHandler(hander)
-	}
+	HornetInfo.AppRouter.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		t, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		// p will contain regular expression is compatible with regular expression in Perl, Python, and other languages.
+		// for instance the regular expression for path '/articles/{id}' will be '^/articles/(?P<v0>[^/]+)$'
+		p, err := route.GetPathRegexp()
+		if err != nil {
+			return err
+		}
+		m, err := route.GetMethods()
+		if err != nil {
+			return err
+		}
+		fmt.Println(strings.Join(m, ","), t, p)
+		return nil
+	})
 
 	Info("ListenAndServe port :", HornetInfo.AppConfig.Port)
 
-	return fasthttp.ListenAndServe(fmt.Sprintf(":%d", HornetInfo.AppConfig.Port), hander)
+	return http.ListenAndServe(fmt.Sprintf(":%d", HornetInfo.AppConfig.Port), HornetInfo.AppRouter)
+
 }
 
 func checkBeforeRun() {
-
-	SetSession()
-
-	// 检测session
-	if HornetInfo.AppConfig.EnableSession && mySessions == nil {
-		panic("manager session error")
-	}
-
-	// 注册静态资源路由
-	for path := range HornetInfo.AppConfig.WebConfig.StaticDir {
-		path = strings.TrimSuffix(path, "/") + "/*"
-		HornetInfo.AppRouter.Any(path, serverStaticRouter)
-	}
 
 	// 检测runmodel
 	if HornetInfo.AppConfig.RunMode != RunModeDev && HornetInfo.AppConfig.RunMode != RunModeProd {
@@ -87,44 +89,15 @@ func checkBeforeRun() {
 
 }
 
-func Router(path string, obj interface{}, methods ...string) {
+func Router(path string, obj interface{}, action string, methods ...string) {
 	// HornetInfo.AppRouter.SetRoute(path, obj, methods...)
 
-	item := TempRouter{
+	item := &TempRouter{
 		Path:    path,
 		Obj:     obj,
 		Methods: methods,
+		Action:  action,
 	}
 
 	TempRouterList = append(TempRouterList, item)
 }
-
-// func admin() {
-
-// 	var err error
-
-// 	if HornetInfo.AppConfig.Admin.PprofCPU {
-// 		HornetInfo.AppConfig.Admin.CPUFile, err = os.OpenFile("./cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		} else {
-// 			pprof.StartCPUProfile(HornetInfo.AppConfig.Admin.CPUFile)
-// 		}
-// 	}
-
-// 	if HornetInfo.AppConfig.Admin.PprofMem {
-// 		HornetInfo.AppConfig.Admin.MemFile, err = os.OpenFile("./mem.out", os.O_RDWR|os.O_CREATE, 0644)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		} else {
-// 			pprof.WriteHeapProfile(HornetInfo.AppConfig.Admin.MemFile)
-// 		}
-// 	}
-
-// }
-
-// func closeAdmin() {
-// 	pprof.StopCPUProfile()
-// 	HornetInfo.AppConfig.Admin.MemFile.Close()
-// 	HornetInfo.AppConfig.Admin.CPUFile.Close()
-// }
